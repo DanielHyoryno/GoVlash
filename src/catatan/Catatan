@@ -1,0 +1,49 @@
+CREATE DATABASE IF NOT EXISTS govlash_laundry;
+USE govlash_laundry;
+
+CREATE TABLE users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    UserName VARCHAR(50) NOT NULL UNIQUE,
+    UserEmail VARCHAR(100) NOT NULL UNIQUE,
+    UserPassword VARCHAR(255) NOT NULL,
+    UserGender VARCHAR(10) NOT NULL,    -- "Male" / "Female"
+    UserDOB DATE NOT NULL,
+    UserRole VARCHAR(20) NOT NULL       -- "Admin", "Laundry Staff", "Receptionist", "Customer"
+);
+
+CREATE TABLE services (
+    ServiceID INT AUTO_INCREMENT PRIMARY KEY,
+    ServiceName VARCHAR(50) NOT NULL,
+    ServiceDescription VARCHAR(250) NOT NULL,
+    ServicePrice DOUBLE NOT NULL,
+    ServiceDuration INT NOT NULL
+);
+
+
+CREATE TABLE transactions (
+    TransactionID INT AUTO_INCREMENT PRIMARY KEY,
+    ServiceID INT NOT NULL,
+    CustomerID INT NOT NULL,
+    ReceptionistID INT NULL,
+    LaundryStaffID INT NULL,
+    TransactionDate DATE NOT NULL,
+    TransactionStatus VARCHAR(20) NOT NULL,   -- "Pending" / "Finished"
+    TotalWeight DOUBLE NOT NULL,
+    TransactionNotes VARCHAR(250),
+
+    CONSTRAINT fk_trans_service      FOREIGN KEY (ServiceID)      REFERENCES services(ServiceID),
+    CONSTRAINT fk_trans_customer     FOREIGN KEY (CustomerID)     REFERENCES users(UserID),
+    CONSTRAINT fk_trans_receptionist FOREIGN KEY (ReceptionistID) REFERENCES users(UserID),
+    CONSTRAINT fk_trans_staff        FOREIGN KEY (LaundryStaffID) REFERENCES users(UserID)
+);
+
+
+CREATE TABLE notifications (
+    NotificationID INT AUTO_INCREMENT PRIMARY KEY,
+    RecipientID INT NOT NULL,                -- CustomerID
+    NotificationMessage VARCHAR(255) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    IsRead INT NOT NULL DEFAULT 0,    -- 0 = false, 1 = true
+
+    CONSTRAINT fk_notif_recipient FOREIGN KEY (RecipientID) REFERENCES users(UserID)
+);
