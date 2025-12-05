@@ -125,8 +125,8 @@ public class CustomerController {
         alert.setContentText(selected.getNotificationMessage());
         alert.showAndWait();
         
-//      alert.getDialogPane().setPrefWidth(400); 
-//      alert.getDialogPane().lookup(".content.label").setStyle("-fx-wrap-text: true;");
+        alert.getDialogPane().setPrefWidth(400); 
+        alert.getDialogPane().lookup(".content.label").setStyle("-fx-wrap-text: true;");
 
         // Jika status masih unread, update jadi Read 
         if (!selected.isRead()) {
