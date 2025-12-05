@@ -13,9 +13,9 @@ public class TransactionModel {
     private int transactionID;
     private int serviceID;
     private int customerID;
-    private int receptionistID;    // 0 = belum di-assign
-    private int laundryStaffID;    // 0 = belum di-assign
-    private Date transactionDate;  // date order created
+    private int receptionistID;    
+    private int laundryStaffID;    
+    private Date transactionDate; 
     private String transactionStatus;
     private double totalWeight;
     private String transactionNotes;
@@ -104,27 +104,26 @@ public class TransactionModel {
         this.transactionNotes = transactionNotes;
     }
     
-    
-    // DI BAWAH INI HARUSNYA AD LOGIC LAGI CUMAN AK BINGUNG
-    // 1. Insert Transaction (Customer)
+    // Untuk customer membuat order
     public void orderLaundryService(int serviceID, int customerID, double weight, String notes) {
         String query = "INSERT INTO transactions " +
-                "(ServiceID, CustomerID, TransactionDate, TransactionStatus, TotalWeight, TransactionNotes) " +
-                "VALUES (?, ?, NOW(), 'Pending', ?, ?)";
+                	   "(ServiceID, CustomerID, TransactionDate, TransactionStatus, TotalWeight, TransactionNotes) " +
+                	   "VALUES (?, ?, NOW(), 'Pending', ?, ?)";
         
         try {
-            PreparedStatement ps = db.getConnection().prepareStatement(query);
-            ps.setInt(1, serviceID);
-            ps.setInt(2, customerID);
-            ps.setDouble(3, weight);
-            ps.setString(4, notes);
-            ps.executeUpdate();
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
+            stmt.setInt(1, serviceID);
+            stmt.setInt(2, customerID);
+            stmt.setDouble(3, weight);
+            stmt.setString(4, notes);
+            stmt.executeUpdate();
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Helper method untuk fetch data
+    // Mendapatkan data transaction
     private ArrayList<TransactionModel> getTransactions(String query) {
         ArrayList<TransactionModel> list = new ArrayList<>();
         
@@ -147,6 +146,7 @@ public class TransactionModel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        
         return list;
     }
 
