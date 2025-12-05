@@ -1,8 +1,10 @@
 package main;
 
+import controller.UserController;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import model.UserModel;
 import view.LoginView;
 import view.ServiceView;
 
@@ -12,7 +14,7 @@ public class Main extends Application {
     public void start(Stage stage){
         LoginView loginView = new LoginView();
         UserModel userModel = new UserModel();
-        AuthController authController = new AuthController(userModel, loginView);
+        UserController authController = new UserController(loginView);
 
         Scene scene = new Scene(loginView.getRoot(), 400, 250);
         stage.setScene(scene);

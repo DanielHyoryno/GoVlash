@@ -16,11 +16,11 @@ import java.time.Period;
 
 public class EmployeeView {
 
-    // === Table & Data ===
+    // Table & Data
     private TableView<UserModel> tableView = new TableView<>();
     private ObservableList<UserModel> employees = FXCollections.observableArrayList();
 
-    // === Form Fields ===
+    // Form components
     private TextField nameField = new TextField();
     private TextField emailField = new TextField();
     private PasswordField passwordField = new PasswordField();
@@ -29,7 +29,6 @@ public class EmployeeView {
     private DatePicker dobPicker = new DatePicker();
     private ComboBox<String> roleBox = new ComboBox<>();
 
-    // Root layout yang nanti dikasih ke Scene
     private BorderPane root = new BorderPane();
 
     public EmployeeView() {
@@ -42,11 +41,10 @@ public class EmployeeView {
     }
 
     private void buildUI() {
-        // === Title ===
         Label title = new Label("Employee Management");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        // === Table Columns ===
+        // Table Columns
         TableColumn<UserModel, Integer> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(new PropertyValueFactory<>("userID"));
 
@@ -59,7 +57,7 @@ public class EmployeeView {
         TableColumn<UserModel, String> genderCol = new TableColumn<>("Gender");
         genderCol.setCellValueFactory(new PropertyValueFactory<>("userGender"));
 
-        TableColumn<UserModel, LocalDate> dobCol = new TableColumn<>("DOB");
+        TableColumn<UserModel, Date> dobCol = new TableColumn<>("DOB");
         dobCol.setCellValueFactory(new PropertyValueFactory<>("userDOB"));
 
         TableColumn<UserModel, String> roleCol = new TableColumn<>("Role");
@@ -91,7 +89,7 @@ public class EmployeeView {
         HBox buttonBox = new HBox(10, addButton, refreshButton);
         formPane.add(buttonBox, 1, 7);
 
-        // === Layout (BorderPane) ===
+        // Layout
         root.setPadding(new Insets(10));
         root.setTop(title);
         BorderPane.setMargin(title, new Insets(10, 0, 10, 0));
@@ -99,14 +97,11 @@ public class EmployeeView {
         root.setCenter(tableView);
         root.setBottom(formPane);
 
-        // === Event Handlers ===
         addButton.setOnAction(e -> insertEmployee());
         refreshButton.setOnAction(e -> loadData());
     }
 
-    // =======================================================
-    // 🔹 Load Data dari Database ke TableView
-    // =======================================================
+    // Load Data dari Database ke TableView
     private void loadData() {
         employees.clear();
 
@@ -118,11 +113,7 @@ public class EmployeeView {
                      "ORDER BY UserID DESC")) {
 
             while (rs.next()) {
-                LocalDate dob = null;
                 Date dbDob = rs.getDate("UserDOB");
-                if (dbDob != null) {
-                    dob = dbDob.toLocalDate();
-                }
 
                 employees.add(new UserModel(
                         rs.getInt("UserID"),
@@ -130,7 +121,7 @@ public class EmployeeView {
                         rs.getString("UserEmail"),
                         rs.getString("UserPassword"),
                         rs.getString("UserGender"),
-                        dob,
+                        dbDob,
                         rs.getString("UserRole")
                 ));
             }
@@ -142,9 +133,7 @@ public class EmployeeView {
         }
     }
 
-    // =======================================================
-    // 🔹 Insert Employee Baru ke Database
-    // =======================================================
+    // Insert Employee Baru ke Database
     private void insertEmployee() {
         String name = nameField.getText();
         String email = emailField.getText();
@@ -154,7 +143,7 @@ public class EmployeeView {
         LocalDate dob = dobPicker.getValue();
         String role = roleBox.getValue();
 
-        // === Validasi dasar sesuai spek Employee Management ===
+        // Validasi input employee
         if (name == null || name.isBlank() ||
             email == null || email.isBlank() ||
             pass == null || pass.isBlank() ||
@@ -207,7 +196,6 @@ public class EmployeeView {
             return;
         }
 
-        // === Cek unique name & email ===
         try (Connection conn = Connect.getInstance().getConnection()) {
 
             // cek username

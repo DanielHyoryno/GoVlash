@@ -20,8 +20,65 @@ public class ServiceController{
     // Tambah service baru – return null kalau sukses, string error kalau gagal
     public String addService(String name, String description,
                              String priceText, String durationText){
+    	// Validasi input
+    	String validation = validateAddService(name, description, priceText, durationText);
+        
+    	if(validation != null) {
+        	return validation;
+        }
 
-        if(name == null || name.trim().isEmpty()){
+        // Jika lolos validasi, set nilai ke model
+        model.setServiceName(name.trim());
+        model.setServiceDescription(description.trim());
+        model.setServicePrice(Double.parseDouble(priceText));
+        model.setServiceDuration(Integer.parseInt(durationText));
+
+        // Insert ke database via model
+        model.addService();
+
+        return null; // null = sukses
+    }
+    
+    // Mengedit service berdasarkan ID
+    public String editService(int id, String name, String description, 
+    						  String priceText, String durationText){
+    	
+    	String validation = validateEditService(name, description, priceText, durationText);
+        
+    	if(validation != null) {
+        	return validation;
+        }
+
+        // Kita update field model dulu
+        model.setServiceID(id);
+        model.setServiceName(name.trim());
+        model.setServiceDescription(description.trim());
+        model.setServicePrice(Double.parseDouble(priceText));
+        model.setServiceDuration(Integer.parseInt(durationText));
+        
+        // Update ke database
+        model.editService(); 
+        return null;
+    }
+    
+    // Menghapus data service via model
+    public void deleteService(int id){
+        model.deleteService(id);
+    }
+    
+    // Validasi di add service
+    private String validateAddService(String name, String description, String priceText, String durationText) {
+        return validateCommon(name, description, priceText, durationText);
+    }
+    
+    // Validasi di edit service
+    private String validateEditService(String name, String description, String priceText, String durationText) {
+        return validateCommon(name, description, priceText, durationText);
+    }
+    
+    // Untuk validasi input secara umum
+    private String validateCommon(String name, String description, String priceText, String durationText) {
+    	if(name == null || name.trim().isEmpty()){
             return "Service name cannot be empty.";
         }
         if(name.trim().length() > 50){
@@ -57,16 +114,7 @@ public class ServiceController{
         if(duration < 1 || duration > 30){
             return "Service duration must be between 1 and 30 days.";
         }
-
-        // ====== set ke model ======
-        model.setServiceName(name.trim());
-        model.setServiceDescription(description.trim());
-        model.setServicePrice(price);
-        model.setServiceDuration(duration);
-
-        // ====== insert ke DB via model ======
-        model.insertService();
-
-        return null; // null = sukses
+        
+        return null;
     }
 }

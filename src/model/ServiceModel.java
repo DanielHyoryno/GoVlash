@@ -1,5 +1,6 @@
 package model;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -66,9 +67,7 @@ public class ServiceModel{
         this.serviceDuration = serviceDuration;
     }
 
-    // ================== DB METHODS ==================
-
-    // ambil semua service dari database
+    // Ambil semua service dari database
     public ArrayList<ServiceModel> getAllServices(){
         ArrayList<ServiceModel> list = new ArrayList<>();
 
@@ -94,14 +93,59 @@ public class ServiceModel{
         return list;
     }
 
-    // insert service baru pakai field yang sudah di-set lewat setter
-    public void insertService(){
-        String query = String.format(
-            "INSERT INTO services (ServiceName, ServiceDescription, ServicePrice, ServiceDuration) " +
-            "VALUES ('%s', '%s', %f, %d)",
-            serviceName, serviceDescription, servicePrice, serviceDuration
-        );
-
-        db.execUpdate(query);
+    // Add service baru pakai field yang sudah di-set lewat setter
+    public void addService(){
+    	try {
+            String query = 
+            	"INSERT INTO services (ServiceName, ServiceDescription, ServicePrice, ServiceDuration) " +
+            	"VALUES (?, ?, ?, ?)";
+            
+            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            
+            ps.setString(1, serviceName);
+            ps.setString(2, serviceDescription);
+            ps.setDouble(3, servicePrice);
+            ps.setInt(4, serviceDuration);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Edit service dari service yang sudah dimasukkins
+    public void editService() {
+    	try {
+            String query =
+            	"UPDATE services " +
+            	"SET ServiceName=?, ServiceDescription=?, ServicePrice=?, ServiceDuration=? " +
+            	"WHERE ServiceID=?";
+            
+            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            
+            ps.setString(1, serviceName);
+            ps.setString(2, serviceDescription);
+            ps.setDouble(3, servicePrice);
+            ps.setInt(4, serviceDuration);
+            ps.setInt(5, serviceID);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Delete service
+    public void deleteService(int id) {
+    	try {
+            String query = 
+            	"DELETE FROM services " +
+            	"WHERE ServiceID=?";
+            
+            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

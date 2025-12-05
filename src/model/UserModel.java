@@ -1,30 +1,29 @@
 package model;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import database.Connect;
 
 public class UserModel{
 
-    private int userID;
-    private String userName;
-    private String userEmail;
-    private String userPassword;
-    private String userGender;
-    private Date userDOB;
-    private String userRole;
+	protected int userID;       
+    protected String userName;
+    protected String userEmail;
+    protected String userPassword;
+    protected String userGender;
+    protected Date userDOB;
+    protected String userRole;
 
-    // bridge ke database, sama kayak contoh dosen (db.executeUpdate / execQuery)
-    private Connect db;
+    protected Connect db;
 
-    // === Constructor kosong (dipakai Controller) ===
     public UserModel(){
         db = Connect.getInstance();
     }
 
-    // === Constructor full (dipakai waktu SELECT / login) ===
     public UserModel(int userID, String userName, String userEmail,
                      String userPassword, String userGender,
                      Date userDOB, String userRole){
@@ -38,7 +37,7 @@ public class UserModel{
         this.userRole = userRole;
     }
 
-    // ================== GETTER & SETTER ==================
+    // Getter Setter
     public int getUserID(){
         return userID;
     }
@@ -87,53 +86,95 @@ public class UserModel{
     public void setUserRole(String userRole){
         this.userRole = userRole;
     }
-
-    // =====================================================
-    //  Insert data CUSTOMER (dipanggil controller)
-    //  Mirip banget dengan insertUser() di contoh dosen
-    // =====================================================
-    public void insertCustomer(){
-        // asumsi semua field sudah divalidasi dan di-set di controller
-        String query = String.format(
-            "INSERT INTO users (UserName, UserEmail, UserPassword, UserGender, UserDOB, UserRole) " +
-            "VALUES ('%s', '%s', '%s', '%s', '%s', 'Customer')",
-            userName, userEmail, userPassword, userGender, userDOB.toString()
-        );
-
-        db.execUpdate(query);   // sama style dengan contoh dosen
+    
+    // Validasi email duplikat
+    public boolean isEmailExists(String email) {
+        String query = String.format("SELECT * FROM users WHERE UserEmail = '%s'", email);
+        ResultSet rs = db.execQuery(query);
+        try {
+            if (rs.next()) return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
-
-    // Kalau kamu mau juga insert employee, bisa reuse:
-    public void insertEmployee(){
-        // di controller, userRole sudah di-set: "Admin"/"Laundry Staff"/"Receptionist"
-        String query = String.format(
-            "INSERT INTO users (UserName, UserEmail, UserPassword, UserGender, UserDOB, UserRole) " +
-            "VALUES ('%s', '%s', '%s', '%s', '%s', '%s')",
-            userName, userEmail, userPassword, userGender, userDOB.toString(), userRole
-        );
-
-        db.execUpdate(query);
-    }
-
-    // =====================================================
-    //  Login user (dipakai AuthController)
-    //  Pola mirip getLatestData() di foto dosen, tapi pakai WHERE
-    // =====================================================
+    
+    // Login user 
     public UserModel loginUser(String email, String password){
         if(email == null || email.trim().isEmpty() ||
            password == null || password.trim().isEmpty()){
             return null;
         }
 
-        String query = "SELECT * FROM users " +
-                       "WHERE UserEmail = '" + email.trim() + "' " +
-                       "AND UserPassword = '" + password + "'";
+        String query = "SELECT * FROM users " + 
+        			   "WHERE UserEmail = ? " + 
+        			   "AND UserPassword = ?";
 
         try{
-            ResultSet rs = db.execQuery(query);
+        	PreparedStatement stmt = db.getConnection().prepareStatement(query);
+        	stmt.setString(1, email);
+        	stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
 
-            if(rs.next()){
-                return new UserModel(
+            if (rs.next()) {
+                String role = rs.getString("UserRole");
+                
+                // Return object sesuai role
+                if ("Customer".equals(role)) {
+                    return new CustomerModel(rs);
+                } else if ("Admin".equals(role)) {
+                    return new AdminModel(rs);
+                } else if ("Receptionist".equals(role)) {
+                    return new ReceptionistModel(rs);
+                } else if ("Laundry Staff".equals(role)) {
+                    return new LaundryStaffModel(rs);
+                } else {
+                	return null;
+                }
+            }
+        } catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // Add User (Customer)
+    public void addUser(String name, String email, String password, String gender, Date dob, String role) {
+        String query = "INSERT INTO users (UserName, UserEmail, UserPassword, UserGender, UserDOB, UserRole) VALUES (?, ?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            ps.setString(1, name);
+            ps.setString(2, email);
+            ps.setString(3, password);
+            ps.setString(4, gender);
+            ps.setDate(5, dob);
+            ps.setString(6, role); // Usually "Customer"
+            ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    // Add Employee
+    public void addEmployee(String name, String email, String password, String gender, Date dob, String role) {
+        addUser(name, email, password, gender, dob, role); // Reuse logic addUser
+    }
+    
+    // Mengambil user berdasarkan role
+    public ArrayList<UserModel> getUsersByRole(String role) {
+        ArrayList<UserModel> list = new ArrayList<>();
+        String query;
+
+        // Jika request employee, ambil semua data kecuali sustomer
+        if (role.equals("Employee")) {
+            query = "SELECT * FROM users WHERE UserRole IN ('Admin', 'Laundry Staff', 'Receptionist') ORDER BY UserID DESC";
+        } else {
+            query = String.format("SELECT * FROM users WHERE UserRole = '%s'", role);
+        }
+
+        ResultSet rs = db.execQuery(query);
+        try {
+            while (rs.next()) {
+                list.add(new UserModel(
                     rs.getInt("UserID"),
                     rs.getString("UserName"),
                     rs.getString("UserEmail"),
@@ -141,13 +182,12 @@ public class UserModel{
                     rs.getString("UserGender"),
                     rs.getDate("UserDOB"),
                     rs.getString("UserRole")
-                );
+                ));
             }
-
-        }catch(SQLException e){
-            e.printStackTrace();
+        } catch (SQLException e) { 
+        	e.printStackTrace(); 
         }
-
-        return null;
+        
+        return list;
     }
 }

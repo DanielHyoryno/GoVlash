@@ -1,7 +1,6 @@
 package controller;
 
 import java.util.ArrayList;
-
 import model.NotificationModel;
 
 public class NotificationController{
@@ -12,7 +11,7 @@ public class NotificationController{
         model = new NotificationModel();
     }
 
-    // notif transaksi selesai
+    // Untuk mengirim notifikasi ke customer tertentu
     // return null kalau sukses, pesan error kalau gagal
     public String sendNotification(int customerID){
 
@@ -32,17 +31,17 @@ public class NotificationController{
         return null;
     }
 
-    // list notif untuk customer
-    public ArrayList<NotificationModel> getNotificationsForCustomer(int customerID){
+    // List semua notifikasi berdasarkan ID customer
+    public ArrayList<NotificationModel> getNotificationsByRecipientID(int customerID){
         return model.getNotificationsForCustomer(customerID);
     }
 
-    // set isRead = true
+    // Mengubah status notifikasi menjadi sudah dibaca
     public void markAsRead(int notificationID){
         model.markAsRead(notificationID);
     }
 
-    // delete notif
+    // Menghapus notifikasi berdasarkan ID.
     public void deleteNotification(int notificationID){
         model.deleteNotification(notificationID);
     }

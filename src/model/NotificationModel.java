@@ -10,9 +10,9 @@ import database.Connect;
 public class NotificationModel{
 
     private int notificationID;
-    private int recipientID;            // Customer ID
+    private int recipientID;            
     private String notificationMessage;
-    private Date createdAt;             // current date
+    private Date createdAt;             
     private boolean isRead;
 
     private Connect db;
@@ -67,9 +67,7 @@ public class NotificationModel{
         this.isRead = read;
     }
 
-    // ================== DB METHODS ==================
-
-    // insert notif baru untuk customer tertentu
+    // Insert notifikasi ke database
     public void insertNotification(int customerID, String message){
         String query = String.format(
             "INSERT INTO notifications (RecipientID, NotificationMessage, CreatedAt, IsRead) " +
@@ -80,7 +78,7 @@ public class NotificationModel{
         db.execUpdate(query);
     }
 
-    // ambil semua notif untuk customer tertentu
+    // Ambil semua notifikasi customer
     public ArrayList<NotificationModel> getNotificationsForCustomer(int customerID){
         ArrayList<NotificationModel> list = new ArrayList<>();
 
@@ -108,16 +106,19 @@ public class NotificationModel{
         return list;
     }
 
-    // set isRead = true
+    // Jika sudah di read, tandain jadi "read"
     public void markAsRead(int notificationID){
         String query = "UPDATE notifications SET IsRead = 1 " +
                        "WHERE NotificationID = " + notificationID;
+        
         db.execUpdate(query);
     }
 
-    // delete notif
+    // Menghapus notifikasi
     public void deleteNotification(int notificationID){
-        String query = "DELETE FROM notifications WHERE NotificationID = " + notificationID;
+        String query = "DELETE FROM notifications " + 
+        			   "WHERE NotificationID = " + notificationID;
+        
         db.execUpdate(query);
     }
 }

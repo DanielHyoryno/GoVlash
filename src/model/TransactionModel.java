@@ -1,6 +1,12 @@
 package model;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import database.Connect;
 
 public class TransactionModel {
 
@@ -13,6 +19,12 @@ public class TransactionModel {
     private String transactionStatus;
     private double totalWeight;
     private String transactionNotes;
+    
+    private Connect db;
+
+    public TransactionModel() {
+        db = Connect.getInstance();
+    }
 
     public TransactionModel(int transactionID, int serviceID, int customerID,
                             int receptionistID, int laundryStaffID,
@@ -94,5 +106,103 @@ public class TransactionModel {
     
     
     // DI BAWAH INI HARUSNYA AD LOGIC LAGI CUMAN AK BINGUNG
+    // 1. Insert Transaction (Customer)
+    public void orderLaundryService(int serviceID, int customerID, double weight, String notes) {
+        String query = "INSERT INTO transactions " +
+                "(ServiceID, CustomerID, TransactionDate, TransactionStatus, TotalWeight, TransactionNotes) " +
+                "VALUES (?, ?, NOW(), 'Pending', ?, ?)";
+        
+        try {
+            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            ps.setInt(1, serviceID);
+            ps.setInt(2, customerID);
+            ps.setDouble(3, weight);
+            ps.setString(4, notes);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Helper method untuk fetch data
+    private ArrayList<TransactionModel> getTransactions(String query) {
+        ArrayList<TransactionModel> list = new ArrayList<>();
+        
+        ResultSet rs = db.execQuery(query);
+        
+        try {
+            while (rs.next()) {
+                list.add(new TransactionModel(
+                    rs.getInt("TransactionID"),
+                    rs.getInt("ServiceID"),
+                    rs.getInt("CustomerID"),
+                    rs.getInt("ReceptionistID"),
+                    rs.getInt("LaundryStaffID"),
+                    rs.getDate("TransactionDate"),
+                    rs.getString("TransactionStatus"),
+                    rs.getDouble("TotalWeight"),
+                    rs.getString("TransactionNotes")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Customer -> mendapat history data transaksi
+    public ArrayList<TransactionModel> getTransactionsByCustomerId(int customerID) {
+        return getTransactions("SELECT * FROM transactions " +
+        					   "WHERE CustomerID = " + customerID + 
+        					   " ORDER BY TransactionID DESC");
+    }
+
+    // Admin -> mendapat semua transaksi
+    public ArrayList<TransactionModel> getAllTransactions() {
+        return getTransactions("SELECT * FROM transactions " +
+        					   "ORDER BY TransactionID DESC");
+    }
     
+    // Admin -> mendapat transaksi dari status
+    public ArrayList<TransactionModel> getTransactionsByStatus(String status) {
+        return getTransactions("SELECT * FROM transactions " + 
+        					   "WHERE TransactionStatus = '" + status + 
+        					   "' ORDER BY TransactionID DESC");
+    }
+
+    // Receptionis -> mendapat tarnsaksi yang masih pending untuk di assign ke staff
+    public ArrayList<TransactionModel> getPendingTransactions() {
+        return getTransactions("SELECT * FROM transactions " +
+        					   "WHERE TransactionStatus = 'Pending' " + 
+        					   "AND LaundryStaffID IS NULL " + 
+        					   "ORDER BY TransactionID DESC");
+    }
+
+    // Laundry Staff -> mendapat transaksi yang di assign dari receptionist
+    public ArrayList<TransactionModel> getAssignedOrdersByLaundryStaffId(int staffID) {
+    	String query =
+        		"SELECT * FROM transactions " +
+        		"WHERE LaundryStaffID = " + staffID + 
+        		" AND TransactionStatus = 'Pending' ORDER BY TransactionID DESC";
+        
+        return getTransactions(query);
+    }
+
+    // Assign Order ke Laundry Staff
+    public void assignOrderToLaundryStaff(int transactionID, int receptionistID, int staffID) {
+        String query = String.format(
+            "UPDATE transactions " +
+            "SET ReceptionistID = %d, LaundryStaffID = %d " +
+            "WHERE TransactionID = %d",
+            receptionistID, staffID, transactionID
+        );
+        
+        db.execUpdate(query);
+    }
+
+    // Update status transaksi ke "Finished"
+    public void updateTransactionStatus(int transactionID, String status) {
+        String query = "UPDATE transactions SET TransactionStatus = 'Finished' WHERE TransactionID = " + transactionID;
+        db.execUpdate(query);
+    }
 }
