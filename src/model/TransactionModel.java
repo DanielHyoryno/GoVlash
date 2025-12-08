@@ -13,8 +13,9 @@ public class TransactionModel {
     private int transactionID;
     private int serviceID;
     private int customerID;
-    private int receptionistID;    
+    private int receptionistID;
     private int laundryStaffID;   
+
     private Date transactionDate; 
     private String transactionStatus;
     private double totalWeight;

@@ -62,12 +62,12 @@ public class TransactionController {
     }
     
     // Dapat transaksi sesuai dengan customer ID
-    public ArrayList<TransactionModel> getTransactionsByCustomerID(int customerID) { // Sesuai Diagram
+    public ArrayList<TransactionModel> getTransactionsByCustomerID(int customerID) { 
         return model.getTransactionsByCustomerId(customerID);
     }
     
     // Untuk laundry staff dapat transaksi yang ditugaskan ke dia
-    public ArrayList<TransactionModel> getAssignedOrdersByLaundryStaffID(int staffID) { // Sesuai Diagram
+    public ArrayList<TransactionModel> getAssignedOrdersByLaundryStaffID(int staffID) { 
         return model.getAssignedOrdersByLaundryStaffId(staffID);
     }
     
