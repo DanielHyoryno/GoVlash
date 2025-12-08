@@ -5,26 +5,24 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import model.UserModel;
-import view.CustomerView;     
-import view.LoginView;        
-import view.RegisterView;     
-import view.TransactionView;  
+import view.ViewCustomerHomePage;     
+import view.ViewLoginPage;        
+import view.ViewRegisterPage;     
 
 public class UserController {
 
     private UserModel model;
-    private LoginView loginView;
-    private RegisterView registerView;
+    private ViewLoginPage loginView;
+    private ViewRegisterPage registerView;
     
     public UserController() {
         this.model = new UserModel();
     }
 
     // Constructor untuk Login Page
-    public UserController(LoginView view) {
+    public UserController(ViewLoginPage view) {
     	this.model = new UserModel();
         this.loginView = view;
         
@@ -33,7 +31,7 @@ public class UserController {
     }
 
     // Constructor untuk Register Page
-    public UserController(RegisterView view) {
+    public UserController(ViewRegisterPage view) {
     	this.model = new UserModel();
         this.registerView = view;
         
@@ -49,7 +47,7 @@ public class UserController {
         loginView.btnRegister.setOnAction(e -> {
             try {
                 Stage stage = (Stage) loginView.getRoot().getScene().getWindow();
-                RegisterView regView = new RegisterView();
+                ViewRegisterPage regView = new ViewRegisterPage();
                 
                 Scene scene = new Scene(regView.getRoot(), 400, 500);
                 stage.setScene(scene);
@@ -87,25 +85,25 @@ public class UserController {
             // Untuk melakukan login sesuai role dan diarahkan ke dasboard yang sesuai
             if (loggedUser.getUserRole().equals("Customer")) {
             	// Mengarahkan user ke customer dashboard
-                CustomerView custView = new CustomerView(loggedUser);
+                view.ViewCustomerHomePage custView = new ViewCustomerHomePage(loggedUser);
                 scene = new Scene(custView.getRoot(), 800, 600);
                 stage.setTitle("Customer Dashboard");
                 
             } else if (loggedUser.getUserRole().equals("Admin")) {
             	// Mengarahkan user ke admin dashboard
-                view.AdminView adminView = new view.AdminView(loggedUser);
+                view.ViewAdminMainPage adminView = new view.ViewAdminMainPage(loggedUser);
                 scene = new Scene(adminView.getRoot(), 800, 600);
                 stage.setTitle("Admin Dashboard");
                 
             } else if (loggedUser.getUserRole().equals("Receptionist")) {
             	// Mengarahkan user ke receptionist dashboard
-                view.ReceptionistView recepView = new view.ReceptionistView(loggedUser);
+                view.ViewReceptionistMainPage recepView = new view.ViewReceptionistMainPage(loggedUser);
                 scene = new Scene(recepView.getRoot(), 800, 600);
                 stage.setTitle("Receptionist Dashboard");
                 
             } else {
             	// Untuk laundry staff
-            	view.LaundryStaffView staffView = new view.LaundryStaffView(loggedUser);
+            	view.ViewLaundryStaffMainPage staffView = new view.ViewLaundryStaffMainPage(loggedUser);
                 scene = new Scene(staffView.getRoot(), 800, 600);
                 stage.setTitle("Laundry Staff Dashboard");
             }
@@ -160,34 +158,57 @@ public class UserController {
         registerView.dpDOB.setValue(null);
     }
     
-    // Ambil semua employee 
-    public ArrayList<UserModel> getAllEmployees() {
-        return model.getUsersByRole("Employee");
+    // Untuk login
+    public UserModel login(String email, String password) {
+        return model.loginUser(email, password);
     }
 
-    // Tambah employee baru
-    public String addEmployee(String name, String email, String password, String confirm, String gender, Date dob, String role) {
-        String validation = validateAddEmployee(name, email, password, confirm, gender, dob, role);
-        
-        if(validation != null) {
-        	return validation;
-        }
+    // Buat masukkin user
+    public void addUser(String name, String email, String password, String confirmPassword, String gender, Date dob, String role) {
+        // Model doesn't need confirmPassword, but Controller signature should match diagram
+        model.addUser(name, email, password, gender, dob, role);
+    }
 
+    // Buat masukkin employee
+    public void addEmployee(String name, String email, String password, String confirmPassword, String gender, Date dob, String role) {
         model.addEmployee(name, email, password, gender, dob, role);
-        return null;
+    }
+
+    // Dapat list user berdasarkan role
+    public ArrayList<UserModel> getUsersByRole(String role) {
+        return model.getUsersByRole(role);
+    }
+
+    // Helper untuk Admin View
+    public ArrayList<UserModel> getAllEmployees() {
+        return getUsersByRole("Employee");
+    }
+
+    // Dapat user berdasarkan email
+    public UserModel getUserByEmail(String email) {
+        return model.getUserByEmail(email); 
+    }
+
+    // Dapat user berdasarkan nama
+    public UserModel getUserByName(String name) {
+        return model.getUserByName(name);
     }
     
     // Validate data customer yang ditambah
-    private String validateAddCustomer(String name, String email, String pass, String conf, String gender, Date dob) {
+    public String validateAddCustomer(String name, String email, String pass, String conf, String gender, Date dob) {
         if(email == null || !email.endsWith("@email.com")) {
         	return "Email must end with @email.com";
+        }
+        
+        if(getAgeFromDate(dob) < 12) {
+        	return "Must be at least 12 years old.";
         }
         
         return validateCommon(name, email, pass, conf, gender, dob);
     }
     
     // Validasi data employee yang ditambah
-    private String validateAddEmployee(String name, String email, String pass, String conf, String gender, Date dob, String role) {
+    public String validateAddEmployee(String name, String email, String pass, String conf, String gender, Date dob, String role) {
         if(email == null || !email.endsWith("@govlash.com")) {
         	return "Email must end with @govlash.com";
         }
@@ -225,9 +246,6 @@ public class UserController {
         	return "DOB required.";
         }
         
-        if(getAgeFromDate(dob) < 12) {
-        	return "Must be at least 12 years old.";
-        }
         return null;
     }
 

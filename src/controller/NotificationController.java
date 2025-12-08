@@ -13,14 +13,12 @@ public class NotificationController{
 
     // Untuk mengirim notifikasi ke customer tertentu
     // return null kalau sukses, pesan error kalau gagal
-    public String sendNotification(int customerID){
+    public String sendNotification(int customerID, String message){
 
         if(customerID <= 0){
             return "Invalid customer ID.";
         }
-
-        String message = "Your order is finished and ready for pickup. Thank you for choosing our service!";
-
+        
         try{
             model.insertNotification(customerID, message);
         }catch(Exception e){
@@ -35,14 +33,25 @@ public class NotificationController{
     public ArrayList<NotificationModel> getNotificationsByRecipientID(int customerID){
         return model.getNotificationsForCustomer(customerID);
     }
+    
+    // Mengambil SATU notifikasi spesifik berdasarkan ID notifikasi
+    public NotificationModel getNotificationByID(int notificationID) {
+        // Validasi sederhana
+        if (notificationID <= 0) {
+            return null; 
+        }
+        
+        // Panggil Model untuk ambil data dari database
+        return model.getNotificationByID(notificationID);
+    }
+    
+    // Menghapus notifikasi berdasarkan ID.
+    public void deleteNotification(int notificationID){
+        model.deleteNotification(notificationID);
+    }
 
     // Mengubah status notifikasi menjadi sudah dibaca
     public void markAsRead(int notificationID){
         model.markAsRead(notificationID);
-    }
-
-    // Menghapus notifikasi berdasarkan ID.
-    public void deleteNotification(int notificationID){
-        model.deleteNotification(notificationID);
     }
 }

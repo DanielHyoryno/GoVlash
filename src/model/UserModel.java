@@ -143,15 +143,17 @@ public class UserModel{
     public void addUser(String name, String email, String password, String gender, Date dob, String role) {
         String query = "INSERT INTO users (UserName, UserEmail, UserPassword, UserGender, UserDOB, UserRole) VALUES (?, ?, ?, ?, ?, ?)";
         try {
-            PreparedStatement ps = db.getConnection().prepareStatement(query);
-            ps.setString(1, name);
-            ps.setString(2, email);
-            ps.setString(3, password);
-            ps.setString(4, gender);
-            ps.setDate(5, dob);
-            ps.setString(6, role); // Usually "Customer"
-            ps.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
+            stmt.setString(1, name);
+            stmt.setString(2, email);
+            stmt.setString(3, password);
+            stmt.setString(4, gender);
+            stmt.setDate(5, dob);
+            stmt.setString(6, role); // Usually "Customer"
+            stmt.executeUpdate();
+        } catch (SQLException e) { 
+        	e.printStackTrace(); 
+        }
     }
 
     // Add Employee
@@ -164,7 +166,7 @@ public class UserModel{
         ArrayList<UserModel> list = new ArrayList<>();
         String query;
 
-        // Jika request employee, ambil semua data kecuali sustomer
+        // Jika request employee, ambil semua data kecuali customer
         if (role.equals("Employee")) {
             query = "SELECT * FROM users WHERE UserRole IN ('Admin', 'Laundry Staff', 'Receptionist') ORDER BY UserID DESC";
         } else {
@@ -189,5 +191,87 @@ public class UserModel{
         }
         
         return list;
+    }
+    
+    // Mencari user berdasarkan email yang terdaftar
+    public UserModel getUserByEmail(String email) {
+        String query = "SELECT * FROM users WHERE UserEmail = ?";
+        
+        try {
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
+            stmt.setString(1, email);
+            
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String role = rs.getString("UserRole");
+                
+                // Return object anak sesuai role
+                if ("Customer".equals(role)) {
+                	return new CustomerModel(rs);
+                } else if ("Admin".equals(role)) {
+                	return new AdminModel(rs);
+                } else if ("Receptionist".equals(role)) {
+                	return new ReceptionistModel(rs);
+                } else if ("Laundry Staff".equals(role)) {
+                	return new LaundryStaffModel(rs);
+                }
+                
+                return new UserModel(
+                    rs.getInt("UserID"), 
+                    rs.getString("UserName"), 
+                    rs.getString("UserEmail"), 
+                    rs.getString("UserPassword"), 
+                    rs.getString("UserGender"), 
+                    rs.getDate("UserDOB"), 
+                    rs.getString("UserRole")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    // Mencari user berdasarkan nama yang terdaftar
+    public UserModel getUserByName(String name) {
+        String query = "SELECT * FROM users WHERE UserName = ?";
+        
+        try {
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
+            stmt.setString(1, name);
+            
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String role = rs.getString("UserRole");
+                
+                if ("Customer".equals(role)) {
+                	return new CustomerModel(rs);
+                } else if ("Admin".equals(role)) {
+                	return new AdminModel(rs);
+                } else if ("Receptionist".equals(role)) {
+                	return new ReceptionistModel(rs);
+                } else if ("Laundry Staff".equals(role)) {
+                	return new LaundryStaffModel(rs);
+                }
+                
+                return new UserModel(
+                    rs.getInt("UserID"), 
+                    rs.getString("UserName"), 
+                    rs.getString("UserEmail"), 
+                    rs.getString("UserPassword"), 
+                    rs.getString("UserGender"), 
+                    rs.getDate("UserDOB"), 
+                    rs.getString("UserRole")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null; 
+
     }
 }

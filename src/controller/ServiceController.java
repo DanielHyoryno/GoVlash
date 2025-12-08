@@ -18,47 +18,30 @@ public class ServiceController{
     }
 
     // Tambah service baru – return null kalau sukses, string error kalau gagal
-    public String addService(String name, String description,
+    public void addService(String name, String description,
                              String priceText, String durationText){
-    	// Validasi input
-    	String validation = validateAddService(name, description, priceText, durationText);
-        
-    	if(validation != null) {
-        	return validation;
-        }
-
-        // Jika lolos validasi, set nilai ke model
-        model.setServiceName(name.trim());
-        model.setServiceDescription(description.trim());
-        model.setServicePrice(Double.parseDouble(priceText));
-        model.setServiceDuration(Integer.parseInt(durationText));
-
-        // Insert ke database via model
-        model.addService();
-
-        return null; // null = sukses
+    	
+    	// Insert ke database via model dengan parameter
+        model.addService(
+            name.trim(), 
+            description.trim(), 
+            Double.parseDouble(priceText), 
+            Integer.parseInt(durationText)
+        );
     }
     
     // Mengedit service berdasarkan ID
-    public String editService(int id, String name, String description, 
+    public void editService(int id, String name, String description, 
     						  String priceText, String durationText){
-    	
-    	String validation = validateEditService(name, description, priceText, durationText);
-        
-    	if(validation != null) {
-        	return validation;
-        }
 
-        // Kita update field model dulu
-        model.setServiceID(id);
-        model.setServiceName(name.trim());
-        model.setServiceDescription(description.trim());
-        model.setServicePrice(Double.parseDouble(priceText));
-        model.setServiceDuration(Integer.parseInt(durationText));
-        
-        // Update ke database
-        model.editService(); 
-        return null;
+    	// Insert ke database via model dengan parameter
+    	model.editService(
+            id,
+            name.trim(), 
+            description.trim(), 
+            Double.parseDouble(priceText), 
+            Integer.parseInt(durationText)
+        );
     }
     
     // Menghapus data service via model
@@ -67,12 +50,12 @@ public class ServiceController{
     }
     
     // Validasi di add service
-    private String validateAddService(String name, String description, String priceText, String durationText) {
+    public String validateAddService(String name, String description, String priceText, String durationText) {
         return validateCommon(name, description, priceText, durationText);
     }
     
     // Validasi di edit service
-    private String validateEditService(String name, String description, String priceText, String durationText) {
+    public String validateEditService(String name, String description, String priceText, String durationText) {
         return validateCommon(name, description, priceText, durationText);
     }
     

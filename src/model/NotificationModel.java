@@ -67,7 +67,7 @@ public class NotificationModel{
         this.isRead = read;
     }
 
-    // Insert notifikasi ke database
+    // Insert notifikasi baru ke database
     public void insertNotification(int customerID, String message){
         String query = String.format(
             "INSERT INTO notifications (RecipientID, NotificationMessage, CreatedAt, IsRead) " +
@@ -78,7 +78,7 @@ public class NotificationModel{
         db.execUpdate(query);
     }
 
-    // Ambil semua notifikasi customer
+    // Ambil daftar semua notifikasi milik satu customer tertentu.
     public ArrayList<NotificationModel> getNotificationsForCustomer(int customerID){
         ArrayList<NotificationModel> list = new ArrayList<>();
 
@@ -105,6 +105,32 @@ public class NotificationModel{
 
         return list;
     }
+    
+    // Mengambil satu notifikasi spesifik berdasarkan ID notifikasinya
+    public NotificationModel getNotificationByID(int notificationID) {
+        NotificationModel notif = null;
+
+        String query = "SELECT * FROM notifications " +
+        			   "WHERE NotificationID = " + notificationID;
+        
+        ResultSet rs = db.execQuery(query);
+        
+        try {
+            if (rs.next()) {
+                notif = new NotificationModel(
+                    rs.getInt("NotificationID"),
+                    rs.getInt("RecipientID"),
+                    rs.getString("NotificationMessage"),
+                    rs.getDate("CreatedAt"),
+                    rs.getInt("IsRead") == 1
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return notif;
+    }
 
     // Jika sudah di read, tandain jadi "read"
     public void markAsRead(int notificationID){
@@ -114,7 +140,7 @@ public class NotificationModel{
         db.execUpdate(query);
     }
 
-    // Menghapus notifikasi
+    // Menghapus notifikasi dari database
     public void deleteNotification(int notificationID){
         String query = "DELETE FROM notifications " + 
         			   "WHERE NotificationID = " + notificationID;

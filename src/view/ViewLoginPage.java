@@ -12,7 +12,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import model.UserModel;
 
-public class LoginView{
+public class ViewLoginPage{
 
     public TextField txtEmail;
     public PasswordField txtPassword;
@@ -21,9 +21,13 @@ public class LoginView{
     public Label lblStatus;
 
     private BorderPane root;
-
-    public LoginView(){
-        // Title
+    
+    public BorderPane getRoot(){
+        return root;
+    }
+    
+    // Tmapilan login page
+    public ViewLoginPage(){
         Label title = new Label("GoVlash Laundry - Login");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
@@ -62,12 +66,9 @@ public class LoginView{
         initController();
     }
     
+    // Mengatur logika ke user model
     private void initController() {
         UserModel model = new UserModel();
         new controller.UserController(this);
-    }
-
-    public BorderPane getRoot(){
-        return root;
     }
 }

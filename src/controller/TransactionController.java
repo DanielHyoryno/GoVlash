@@ -1,8 +1,6 @@
 package controller;
 
 import java.util.ArrayList;
-
-import database.Connect;
 import model.TransactionModel;
 
 public class TransactionController {
@@ -15,11 +13,11 @@ public class TransactionController {
     // Untuk customer bikin transaksi laundry
     public String orderLaundryService(int customerID, Integer serviceID, String weightStr, String notes) {
     	String validation = validateOrder(weightStr, notes);
-        if (validation != null) {
+        if(validation != null) {
         	return validation;
         }
     	
-    	if (serviceID == null) {
+    	if(serviceID == null) {
     		return "Please select a service.";
     	}
 
@@ -55,14 +53,21 @@ public class TransactionController {
 
     // Mengambil data transaksi
     public ArrayList<TransactionModel> getAllTransactions() { 
-    	return model.getAllTransactions(); 
+    	return model.getAllTransactions();
     }
     
-    public ArrayList<TransactionModel> getTransactionsByCustomerId(int customerID) { // Sesuai Diagram
+    // Saat admin menyelesaikan suatu transaction, ambil berdasarkan status
+    public ArrayList<TransactionModel> getTransactionsByStatus(String status) {
+        return model.getTransactionsByStatus(status);
+    }
+    
+    // Dapat transaksi sesuai dengan customer ID
+    public ArrayList<TransactionModel> getTransactionsByCustomerID(int customerID) { // Sesuai Diagram
         return model.getTransactionsByCustomerId(customerID);
     }
     
-    public ArrayList<TransactionModel> getAssignedOrdersByLaundryStaffId(int staffID) { // Sesuai Diagram
+    // Untuk laundry staff dapat transaksi yang ditugaskan ke dia
+    public ArrayList<TransactionModel> getAssignedOrdersByLaundryStaffID(int staffID) { // Sesuai Diagram
         return model.getAssignedOrdersByLaundryStaffId(staffID);
     }
     
@@ -77,11 +82,6 @@ public class TransactionController {
         } else {
             return model.getTransactionsByCustomerId(userID);
         }
-    }
-
-    // Saat admin menyelesaikan suatu transaction
-    public ArrayList<TransactionModel> getFinishedTransactions() {
-        return model.getTransactionsByStatus("Finished");
     }
 
     // Receptionist -> assign order ke Laundry Staff

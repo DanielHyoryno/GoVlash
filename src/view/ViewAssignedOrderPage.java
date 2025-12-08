@@ -4,17 +4,20 @@ import controller.ServiceController;
 import controller.TransactionController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.ServiceModel;
 import model.TransactionModel;
 import model.UserModel;
 import java.util.ArrayList;
 
-public class LaundryStaffView {
+public class ViewAssignedOrderPage {
 
     private UserModel currentUser;
     private BorderPane root;
@@ -23,30 +26,35 @@ public class LaundryStaffView {
     private ServiceController serviceController; 
 
     private TableView<TransactionModel> tableAssigned;
-    private Button btnFinish, btnRefresh, btnLogout;
+    private Button btnFinish, btnRefresh, btnBack;
     
     private ArrayList<ServiceModel> serviceList;
 
-    public LaundryStaffView(UserModel user) {
+    public ViewAssignedOrderPage(UserModel user) {
         this.currentUser = user;
         this.transController = new TransactionController();
         this.serviceController = new ServiceController();
         
-        // Load data service
+        // Load data service untuk mapping nama
         this.serviceList = serviceController.getAllServices();
         
-        buildUI();
-        refreshData();
+        openAssignedOrderPage();
+        getAssignedOrdersByLaundryStaffID(currentUser.getUserID());
     }
 
-    public BorderPane getRoot() { return root; }
+    public Parent getRoot() { 
+    	return root; 
+    }
 
-    private void buildUI() {
-        // Header
-        Label title = new Label("Laundry Staff - " + currentUser.getUserName());
-        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+    // Tampilan untuk staff melihat order yang di assign ke dia
+    private void openAssignedOrderPage() {
+        root = new BorderPane();
+        root.setPadding(new Insets(20));
 
-        // Table
+        Label title = new Label("My Assigned Orders");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
+        // Table Setup
         tableAssigned = new TableView<>();
         tableAssigned.setPlaceholder(new Label("No active jobs assigned to you"));
         
@@ -71,67 +79,65 @@ public class LaundryStaffView {
 
         btnFinish = new Button("Mark as Finished");
         btnRefresh = new Button("Refresh");
-        btnLogout = new Button("Logout");
+        btnBack = new Button("Back to Menu");
 
         HBox actions = new HBox(10, btnRefresh, btnFinish);
         actions.setAlignment(Pos.CENTER);
 
-        // Layout
-        VBox centerBox = new VBox(15, title, new Label("Your Job List:"), tableAssigned, actions);
-        centerBox.setPadding(new Insets(15));
+        VBox content = new VBox(15, title, tableAssigned, actions, btnBack);
+        content.setAlignment(Pos.CENTER);
+        root.setCenter(content);
 
-        root = new BorderPane();
-        root.setCenter(centerBox);
-        
-        HBox topBar = new HBox(btnLogout);
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-        topBar.setPadding(new Insets(10));
-        root.setTop(topBar);
-
-        btnRefresh.setOnAction(e -> refreshData());
-        btnFinish.setOnAction(e -> handleFinish());
-        btnLogout.setOnAction(e -> handleLogout());
+        btnRefresh.setOnAction(e -> getAssignedOrdersByLaundryStaffID(currentUser.getUserID()));
+        btnFinish.setOnAction(e -> finishOrder());
+        btnBack.setOnAction(e -> goBack());
     }
 
-    private void refreshData() {
+    // Mengambil data order milik staff tertentu dari database dan ditampilkan ke tabel
+    private ArrayList<TransactionModel> getAssignedOrdersByLaundryStaffID(int staffID) {
+        ArrayList<TransactionModel> list = transController.getAssignedOrdersByLaundryStaffID(staffID);
+        
+        // Update UI
         tableAssigned.getItems().clear();
-        tableAssigned.getItems().addAll(transController.getTransactionsByRole("Laundry Staff", currentUser.getUserID()));
+        tableAssigned.getItems().addAll(list);
+        
+        return list;
     }
     
-    // Jika transaction sudah selesai
-    private void handleFinish() {
+    // Untuk nandain kalau order sudah selesai dikerjain
+    private void finishOrder() {
         TransactionModel selected = tableAssigned.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showAlert(Alert.AlertType.WARNING, "Select a job to finish!");
             return;
         }
 
-        // Panggil Controller untuk update status
-        transController.updateTransactionStatus(selected.getTransactionID(), selected.getTransactionStatus());
+        // Kirim status baru "Finished"
+        transController.updateTransactionStatus(selected.getTransactionID(), "Finished");
         
         showAlert(Alert.AlertType.INFORMATION, "Great job! Order finished.");
-        refreshData(); // Refresh agar data hilang dari list pending
+        getAssignedOrdersByLaundryStaffID(currentUser.getUserID()); // Refresh list
     }
-
+    
+    
+    // Dapat service sesuai id nya
     private String getServiceNameByID(int id) {
         for (ServiceModel s : serviceList) {
-            if (s.getServiceID() == id) return s.getServiceName();
+            if (s.getServiceID() == id) {
+            	return s.getServiceName();
+            }
         }
         return "Unknown";
     }
     
-    // Untuk staff logout
-    private void handleLogout() {
-        try {
-            Stage stage = (Stage) root.getScene().getWindow();
-            LoginView loginView = new LoginView();
-            new controller.UserController(loginView);
-            stage.setScene(new Scene(loginView.getRoot(), 400, 400));
-            stage.setTitle("Login");
-            stage.centerOnScreen();
-        } catch (Exception e) { e.printStackTrace(); }
+    // Kembali ke page sebelumnya yaitu "ViewLaundryStaffMainPage"
+    private void goBack() {
+        Stage stage = (Stage) root.getScene().getWindow();
+        stage.setScene(new Scene(new ViewLaundryStaffMainPage(currentUser).getRoot(), 700, 600));
+        stage.centerOnScreen();
     }
-
+    
+    // Untuk nampilin pesan
     private void showAlert(Alert.AlertType type, String msg) {
         Alert alert = new Alert(type);
         alert.setContentText(msg);

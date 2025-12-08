@@ -13,9 +13,9 @@ public class TransactionModel {
     private int transactionID;
     private int serviceID;
     private int customerID;
-    private int receptionistID;    // 0 = belum di-assign
-    private int laundryStaffID;    // 0 = belum di-assign
-    private Date transactionDate;  // date order created
+    private int receptionistID;    
+    private int laundryStaffID;   
+    private Date transactionDate; 
     private String transactionStatus;
     private double totalWeight;
     private String transactionNotes;
@@ -202,7 +202,9 @@ public class TransactionModel {
 
     // Update status transaksi ke "Finished"
     public void updateTransactionStatus(int transactionID, String status) {
-        String query = "UPDATE transactions SET TransactionStatus = 'Finished' WHERE TransactionID = " + transactionID;
+        String query = String.format("UPDATE transactions " + 
+        							 "SET TransactionStatus = '%s' " + 
+        							 "WHERE TransactionID = %d", status, transactionID);
         db.execUpdate(query);
     }
 }

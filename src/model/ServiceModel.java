@@ -94,56 +94,56 @@ public class ServiceModel{
     }
 
     // Add service baru pakai field yang sudah di-set lewat setter
-    public void addService(){
+    public void addService(String name, String description, double price, int duration){
     	try {
             String query = 
             	"INSERT INTO services (ServiceName, ServiceDescription, ServicePrice, ServiceDuration) " +
             	"VALUES (?, ?, ?, ?)";
             
-            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
             
-            ps.setString(1, serviceName);
-            ps.setString(2, serviceDescription);
-            ps.setDouble(3, servicePrice);
-            ps.setInt(4, serviceDuration);
-            ps.executeUpdate();
+            stmt.setString(1, name);
+            stmt.setString(2, description);
+            stmt.setDouble(3, price);
+            stmt.setInt(4, duration);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
     
     // Edit service dari service yang sudah dimasukkins
-    public void editService() {
+    public void editService(int id, String name, String description, double price, int duration) {
     	try {
             String query =
             	"UPDATE services " +
             	"SET ServiceName=?, ServiceDescription=?, ServicePrice=?, ServiceDuration=? " +
             	"WHERE ServiceID=?";
             
-            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
             
-            ps.setString(1, serviceName);
-            ps.setString(2, serviceDescription);
-            ps.setDouble(3, servicePrice);
-            ps.setInt(4, serviceDuration);
-            ps.setInt(5, serviceID);
-            ps.executeUpdate();
+            stmt.setString(1, name);
+            stmt.setString(2, description);
+            stmt.setDouble(3, price);
+            stmt.setInt(4, duration);
+            stmt.setInt(5, id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
     
-    // Delete service
+    // Delete service dari database
     public void deleteService(int id) {
     	try {
             String query = 
             	"DELETE FROM services " +
             	"WHERE ServiceID=?";
             
-            PreparedStatement ps = db.getConnection().prepareStatement(query);
+            PreparedStatement stmt = db.getConnection().prepareStatement(query);
             
-            ps.setInt(1, id);
-            ps.executeUpdate();
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

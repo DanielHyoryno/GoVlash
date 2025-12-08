@@ -15,7 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.UserModel;
 
-public class RegisterView {
+public class ViewRegisterPage {
 
     public TextField txtName;
     public TextField txtEmail;
@@ -29,9 +29,13 @@ public class RegisterView {
     public Label lblStatus;
 
     private BorderPane root;
+    
+    public BorderPane getRoot(){
+        return root;
+    }
 
-    public RegisterView(){
-        // Title
+    // Tampilan untuk register
+    public ViewRegisterPage(){
         Label title = new Label("GoVlash Laundry - Register");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
@@ -95,7 +99,7 @@ public class RegisterView {
         initController();
     }
     
-    // Untuk mengaktifkan controller agar data tersimpan
+    // Untuk menyimpan data yang di insert
     private void initController() {
         UserModel model = new UserModel();
         
@@ -107,7 +111,7 @@ public class RegisterView {
         try {
             Stage stage = (Stage) root.getScene().getWindow();
 
-            LoginView loginView = new LoginView();
+            ViewLoginPage loginView = new ViewLoginPage();
 
             Scene scene = new Scene(loginView.getRoot(), 400, 400); 
             stage.setScene(scene);
@@ -117,9 +121,5 @@ public class RegisterView {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    public BorderPane getRoot(){
-        return root;
     }
 }

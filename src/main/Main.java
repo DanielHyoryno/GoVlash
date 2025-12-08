@@ -5,14 +5,13 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import model.UserModel;
-import view.LoginView;
-import view.ServiceView;
+import view.ViewLoginPage;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage stage){
-        LoginView loginView = new LoginView();
+        ViewLoginPage loginView = new ViewLoginPage();
         UserModel userModel = new UserModel();
         UserController authController = new UserController(loginView);
 
