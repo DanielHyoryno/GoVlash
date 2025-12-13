@@ -122,6 +122,10 @@ public class ViewAssignedOrderPage {
     
     // Dapat service sesuai id nya
     private String getServiceNameByID(int id) {
+    	if (id == 0) {
+            return "Service Deleted";
+        }
+    	
         for (ServiceModel s : serviceList) {
             if (s.getServiceID() == id) {
             	return s.getServiceName();

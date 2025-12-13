@@ -22,7 +22,7 @@ CREATE TABLE services (
 
 CREATE TABLE transactions (
     TransactionID INT AUTO_INCREMENT PRIMARY KEY,
-    ServiceID INT NOT NULL,
+    ServiceID INT NULL,
     CustomerID INT NOT NULL,
     ReceptionistID INT NULL,
     LaundryStaffID INT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE transactions (
     TotalWeight DOUBLE NOT NULL,
     TransactionNotes VARCHAR(250),
 
-    CONSTRAINT fk_trans_service      FOREIGN KEY (ServiceID)      REFERENCES services(ServiceID),
+    CONSTRAINT fk_trans_service      FOREIGN KEY (ServiceID)      REFERENCES services(ServiceID) ON DELETE SET NULL,
     CONSTRAINT fk_trans_customer     FOREIGN KEY (CustomerID)     REFERENCES users(UserID),
     CONSTRAINT fk_trans_receptionist FOREIGN KEY (ReceptionistID) REFERENCES users(UserID),
     CONSTRAINT fk_trans_staff        FOREIGN KEY (LaundryStaffID) REFERENCES users(UserID)
