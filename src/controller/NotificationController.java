@@ -34,7 +34,7 @@ public class NotificationController{
         return model.getNotificationsForCustomer(customerID);
     }
     
-    // Mengambil SATU notifikasi spesifik berdasarkan ID notifikasi
+    // Mengambil satu notifikasi spesifik berdasarkan ID notifikasi
     public NotificationModel getNotificationByID(int notificationID) {
         // Validasi sederhana
         if (notificationID <= 0) {

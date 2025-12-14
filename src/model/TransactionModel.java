@@ -166,9 +166,22 @@ public class TransactionModel {
     
     // Admin -> mendapat transaksi dari status
     public ArrayList<TransactionModel> getTransactionsByStatus(String status) {
-        return getTransactions("SELECT * FROM transactions " + 
-        					   "WHERE TransactionStatus = '" + status + 
-        					   "' ORDER BY TransactionID DESC");
+	String query = "";
+        
+        if (status.equals("Pending")) {
+            // Hanya ambil yang belum ada staffnya
+            query = "SELECT * FROM transactions " + 
+                    "WHERE TransactionStatus = 'Pending' " + 
+                    "AND LaundryStaffID IS NULL " + 
+                    "ORDER BY TransactionID DESC";
+        } else {
+            // Untuk status finished, ambil semua
+            query = "SELECT * FROM transactions " + 
+                    "WHERE TransactionStatus = '" + status + "' " + 
+                    "ORDER BY TransactionID DESC";
+        }
+
+        return getTransactions(query);
     }
 
     // Receptionis -> mendapat tarnsaksi yang masih pending untuk di assign ke staff
